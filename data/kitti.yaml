@@ -1,0 +1,13 @@
+#train: ../yolov5-kitty/dataset/kitti/images/train  # train images (relative to 'path') 118287 images
+#val: ../yolov5-kitty/dataset/kitti/images/train  # train images (relative to 'path') 5000 images
+path: ../datasets/KITTI
+train: images/train
+val: images/val
+
+# Classes
+#nc: 3  # number of classes
+#namess: ['Car','Cyclist', 'Pedestrian']
+names:
+  0: Car
+  1: Cyclist
+  2: Pedestrian
