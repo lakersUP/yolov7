@@ -466,7 +466,12 @@ class ComputeLoss:
                 pwh = (ps[:, 2:4].sigmoid() * 2) ** 2 * anchors[i]
                 pbox = torch.cat((pxy, pwh), 1)  # predicted box
                 iou = bbox_iou(pbox.T, tbox[i], x1y1x2y2=False, CIoU=True)  # iou(prediction, target)
-                lbox += (1.0 - iou).mean()  # iou loss
+                # lbox += (1.0 - iou).mean()  # iou loss
+                if type(iou) is tuple:
+                    lbox += (iou[1].detach() * (1 - iou[0])).mean()
+                    iou = iou[0]
+                else:
+                    lbox += (1.0 - iou).mean()  # iou loss
 
                 # Objectness
                 tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * iou.detach().clamp(0).type(tobj.dtype)  # iou ratio
@@ -604,7 +609,12 @@ class ComputeLossOTA:
                 selected_tbox = targets[i][:, 2:6] * pre_gen_gains[i]
                 selected_tbox[:, :2] -= grid
                 iou = bbox_iou(pbox.T, selected_tbox, x1y1x2y2=False, CIoU=True)  # iou(prediction, target)
-                lbox += (1.0 - iou).mean()  # iou loss
+                # lbox += (1.0 - iou).mean()  # iou loss
+                if type(iou) is tuple:
+                    lbox += (iou[1].detach() * (1 - iou[0])).mean()
+                    iou = iou[0]
+                else:
+                    lbox += (1.0 - iou).mean()  # iou loss
 
                 # Objectness
                 tobj[b, a, gj, gi] = (1.0 - self.gr) + self.gr * iou.detach().clamp(0).type(tobj.dtype)  # iou ratio
@@ -1562,7 +1572,7 @@ class ComputeLossAuxOTA:
             all_anch = all_anch[fg_mask_inboxes]
         
             this_target = this_target[matched_gt_inds]
-        
+
             for i in range(nl):
                 layer_idx = from_which_layer == i
                 matching_bs[i].append(all_b[layer_idx])
